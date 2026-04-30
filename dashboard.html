@@ -146,6 +146,34 @@
   }
   @keyframes pulsePlane { 0%,100%{transform:scale(0.9);opacity:0.8} 50%{transform:scale(1.1);opacity:1} }
 
+  /* Completed state for plane orbit */
+  .plane-orbit.completed .orbit-ring,
+  .plane-orbit.completed .orbit-ring-2 {
+    animation: none;
+    border-color: rgba(34,197,94,0.2);
+    border-top-color: rgba(34,197,94,0.5);
+  }
+  .plane-orbit.completed .plane-icon {
+    animation: none;
+    opacity: 1;
+    transform: scale(1);
+  }
+  .plane-check {
+    display: none;
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    width: 22px; height: 22px;
+    background: #22c55e;
+    border-radius: 50%;
+    align-items: center; justify-content: center;
+    z-index: 3;
+    box-shadow: 0 0 10px rgba(34,197,94,0.6);
+    animation: checkPop 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
+  }
+  .plane-check.visible { display: flex; }
+  @keyframes checkPop { from{transform:scale(0);opacity:0} to{transform:scale(1);opacity:1} }
+
   /* Pulse dots */
   .pulse-dots {
     display: flex; justify-content: center; gap: 6px; margin-bottom: 1.2rem;
@@ -279,7 +307,7 @@
 <!-- ─── HEADER ─── -->
 <header>
   <a class="logo" href="index.html">
-    <img src="GLOBALSKY.png.jpg" alt="Global Sky Shipment" style="height:54px;width:auto;object-fit:contain;filter:brightness(1.1) drop-shadow(0 2px 8px rgba(37,99,235,0.4));" />
+    <img src="GLOBALSKY.png" alt="Global Sky Shipment" style="height:54px;width:auto;object-fit:contain;filter:brightness(1.1) drop-shadow(0 2px 8px rgba(37,99,235,0.4));" />
   </a>
 </header>
 
@@ -288,15 +316,18 @@
   <div class="dash-card">
 
     <!-- Animated plane -->
-    <div class="plane-orbit">
+    <div class="plane-orbit" id="planeOrbit">
       <div class="orbit-ring"></div>
       <div class="orbit-ring-2"></div>
       <span class="plane-icon">✈️</span>
+      <div class="plane-check" id="planeCheck">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
     </div>
 
-    <div class="status-badge">
-      <span class="status-dot"></span>
-      Processing
+    <div class="status-badge" id="statusBadge">
+      <span class="status-dot" id="statusDot"></span>
+      <span id="statusText">Processing</span>
     </div>
 
     <h1>Processing Your <span class="highlight">Package</span></h1>
@@ -591,6 +622,26 @@
 
       document.getElementById('countdownTimer').textContent = '00:00';
       document.getElementById('countdownTimer').style.color = 'var(--success)';
+
+      // ── COMPLETED UI UPDATES ────────────────────────────────────────
+      // 1. Change status badge to green "Completed"
+      const badge = document.getElementById('statusBadge');
+      if (badge) {
+        badge.style.background = 'rgba(34,197,94,0.12)';
+        badge.style.borderColor = 'rgba(34,197,94,0.35)';
+        badge.style.color = '#22c55e';
+      }
+      const dot = document.getElementById('statusDot');
+      if (dot) { dot.style.background = '#22c55e'; dot.style.animationName = 'none'; }
+      const txt = document.getElementById('statusText');
+      if (txt) txt.textContent = 'Completed';
+
+      // 2. Stop orbit rings + show green checkmark at airplane bottom
+      const orbit = document.getElementById('planeOrbit');
+      if (orbit) orbit.classList.add('completed');
+      const chk = document.getElementById('planeCheck');
+      if (chk) chk.classList.add('visible');
+      // ────────────────────────────────────────────────────────────────
 
       // Mark "Processing" step done too
       const pStep = document.getElementById('stepProcessing');
