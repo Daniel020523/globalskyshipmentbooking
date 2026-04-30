@@ -427,7 +427,7 @@
 <!-- ─── HEADER ─── -->
 <header>
   <a class="logo" href="#">
-    <img src="GLOBALSKY.png.jpg" alt="Global Sky Shipment" style="height:54px;width:auto;object-fit:contain;filter:brightness(1.1) drop-shadow(0 2px 8px rgba(37,99,235,0.4));" />
+    <img src="GLOBALSKY.png" alt="Global Sky Shipment" style="height:54px;width:auto;object-fit:contain;filter:brightness(1.1) drop-shadow(0 2px 8px rgba(37,99,235,0.4));" />
   </a>
   <div class="header-right">
     <div class="header-badge">✈ 180+ Countries</div>
@@ -648,7 +648,7 @@
     <div class="ring-inner"></div>
     <span class="spin-icon">✈️</span>
   </div>
-  <div class="spin-label">Calculating Route…</div>
+  <div class="spin-label" id="spin-label">Calculating Route & Fee…</div>
   <p class="spin-sub">Finding the best air freight path from your chosen hub</p>
 </div>
 
@@ -824,30 +824,207 @@ const AIRPORTS = {
     checkForm();
   }
 
-  function triggerFeeModal() {
+  async function triggerFeeModal() {
     const val = document.getElementById('airport').value;
     if (!val) return;
     document.getElementById('spinnerOverlay').classList.add('active');
-    setTimeout(() => {
+    document.getElementById('spin-label') && (document.getElementById('spin-label').textContent = 'Calculating Route & Fee…');
+
+    try {
+      await showFeeModal(val);
+    } catch(e) {
+      console.warn('Fee calculation error:', e);
+      await showFeeModal(val, null); // fallback
+    } finally {
       document.getElementById('spinnerOverlay').classList.remove('active');
-      showFeeModal(val);
-    }, 2700);
+    }
   }
 
-  function showFeeModal(airport) {
-    const fee = Math.floor(Math.random() * 301) + 200;
-    const handling = Math.floor(fee * 0.15);
-    const freight  = Math.floor(fee * 0.55);
-    const customs  = Math.floor(fee * 0.18);
+  // Airport IATA → approximate lat/lng for distance calculation
+  const AIRPORT_COORDS = {
+    'CAI':[-30.1219,31.4056],'JFK':[40.6413,-73.7781],'LAX':[33.9416,-118.4085],
+    'LHR':[51.4700,-0.4543],'CDG':[49.0097,2.5479],'DXB':[25.2532,55.3657],
+    'NBO':[-1.3192,36.9275],'SYD':[-33.9399,151.1753],'HND':[35.5494,139.7798],
+    'NRT':[35.7647,140.3864],'SIN':[1.3644,103.9915],'ICN':[37.4602,126.4407],
+    'BOM':[19.0896,72.8656],'DEL':[28.5562,77.1000],'GRU':[-23.4356,-46.4731],
+    'JNB':[-26.1367,28.2410],'ADD':[8.9779,38.7993],'LOS':[6.5774,3.3212],
+    'ABV':[9.0068,7.2632],'ACC':[-5.6052,-0.1668],'MUC':[48.3537,11.7750],
+    'FRA':[50.0379,8.5622],'AMS':[52.3086,4.7639],'MAD':[40.4983,-3.5676],
+    'FCO':[41.8003,12.2389],'IST':[41.2608,28.7418],'BKK':[13.6900,100.7501],
+    'KUL':[2.7456,101.7099],'PEK':[40.0799,116.6031],'PVG':[31.1443,121.8083],
+    'DOH':[25.2731,51.6081],'RUH':[24.9578,46.6989],'KWI':[29.2267,47.9690],
+    'AUH':[24.4330,54.6511],'BAH':[26.2708,50.6336],'ORD':[41.9742,-87.9073],
+    'ATL':[33.6407,-84.4277],'DFW':[32.8998,-97.0403],'MIA':[25.7959,-80.2870],
+    'YYZ':[43.6777,-79.6248],'MEX':[19.4363,-99.0721],'BOG':[4.7016,-74.1469],
+    'GIG':[-22.8099,-43.2505],'SCL':[-33.3928,-70.7856],'EZE':[-34.8222,-58.5358],
+    'CPT':[-33.9648,18.6017],'NBO':[-1.3192,36.9275],'DAR':[-6.8780,39.2026],
+    'CMN':[33.3675,-7.5898],'ACC':[5.6052,-0.1668],'ABJ':[5.2613,-3.9262],
+    'SFO':[37.6213,-122.3790],'SEA':[47.4502,-122.3088],'BOS':[42.3656,-71.0096],
+    'IAH':[29.9902,-95.3368],'DEN':[39.8561,-104.6737],'LAS':[36.0840,-115.1537],
+  };
+
+  function getAirportCode(airportStr) {
+    const match = airportStr.match(/^([A-Z]{3})\s*—/);
+    return match ? match[1] : null;
+  }
+
+  function haversineKm(lat1, lon1, lat2, lon2) {
+    const R = 6371;
+    const dLat = (lat2-lat1)*Math.PI/180;
+    const dLon = (lon2-lon1)*Math.PI/180;
+    const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  }
+
+  async function showFeeModal(airport, _unused) {
+    // 1. Try to get user's location
+    let userLat = null, userLon = null;
+    try {
+      const pos = await new Promise((res, rej) => navigator.geolocation.getCurrentPosition(res, rej, {timeout:5000}));
+      userLat = pos.coords.latitude;
+      userLon = pos.coords.longitude;
+    } catch(e) {
+      // geolocation denied or unavailable — use IP-based fallback
+      try {
+        const ipRes = await fetch('https://ipapi.co/json/');
+        const ipData = await ipRes.json();
+        userLat = parseFloat(ipData.latitude);
+        userLon = parseFloat(ipData.longitude);
+      } catch(e2) { /* will use flat rate */ }
+    }
+
+    // 2. Calculate distance-based fee
+    const code = getAirportCode(airport);
+    const coords = code && AIRPORT_COORDS[code];
+    let fee;
+
+    if (userLat && userLon && coords) {
+      const distKm = haversineKm(userLat, userLon, coords[0], coords[1]);
+      // Base: $120 + $0.18/km, capped $150–$800
+      fee = Math.round(120 + distKm * 0.18);
+      fee = Math.min(800, Math.max(150, fee));
+    } else {
+      // Fallback: distance-neutral estimate per region
+      const regionFees = {
+        'Africa': [250,450], 'Americas': [300,650], 'Asia': [350,700],
+        'Europe': [280,550], 'Oceania': [400,750], 'Middle East': [300,600]
+      };
+      // guess region from country
+      const country = document.getElementById('country').value;
+      const africaList = ['Nigeria','Ghana','Kenya','Egypt','Ethiopia','South Africa','Tanzania','Morocco'];
+      const europeList = ['France','Germany','Italy','Netherlands','Spain','United Kingdom'];
+      const oceaniaList = ['Australia','New Zealand'];
+      const middleList = ['Saudi Arabia','UAE','Qatar','Kuwait','Bahrain','Oman','Jordan'];
+      let range = [200, 500];
+      if (africaList.includes(country)) range = regionFees['Africa'];
+      else if (europeList.includes(country)) range = regionFees['Europe'];
+      else if (oceaniaList.includes(country)) range = regionFees['Oceania'];
+      else if (middleList.includes(country)) range = regionFees['Middle East'];
+      else if (['United States','Canada','Mexico','Brazil','Colombia'].includes(country)) range = regionFees['Americas'];
+      else range = regionFees['Asia'];
+      fee = Math.floor(Math.random() * (range[1]-range[0]+1)) + range[0];
+    }
+
+    // 3. Fetch currency for the user's country
+    let currencyCode = 'USD', currencySymbol = '$', exchangeRate = 1;
+    const country = document.getElementById('country').value;
+    const countryCurrencyMap = {
+      'Nigeria':'NGN','Ghana':'GHS','Kenya':'KES','Egypt':'EGP','South Africa':'ZAR',
+      'Ethiopia':'ETB','Tanzania':'TZS','Morocco':'MAD','United Kingdom':'GBP',
+      'France':'EUR','Germany':'EUR','Italy':'EUR','Spain':'EUR','Netherlands':'EUR',
+      'United States':'USD','Canada':'CAD','Australia':'AUD','New Zealand':'NZD',
+      'Japan':'JPY','China':'CNY','India':'INR','Brazil':'BRL','Mexico':'MXN',
+      'Saudi Arabia':'SAR','United Arab Emirates':'AED','Qatar':'QAR','Kuwait':'KWD',
+      'Turkey':'TRY','South Korea':'KRW','Indonesia':'IDR','Pakistan':'PKR',
+      'Bangladesh':'BDT','Philippines':'PHP','Thailand':'THB','Malaysia':'MYR',
+      'Singapore':'SGD','Colombia':'COP','Argentina':'ARS','Chile':'CLP',
+      'Israel':'ILS','Jordan':'JOD','Oman':'OMR','Bahrain':'BHD',
+      'Vietnam':'VND','Ukraine':'UAH','Poland':'PLN','Sweden':'SEK',
+      'Norway':'NOK','Denmark':'DKK','Switzerland':'CHF','Czechia':'CZK',
+      'Hungary':'HUF','Romania':'RON','Russia':'RUB','Kazakhstan':'KZT',
+    };
+    currencyCode = countryCurrencyMap[country] || 'USD';
+
+    if (currencyCode !== 'USD') {
+      try {
+        const fxRes = await fetch(`https://open.er-api.com/v6/latest/USD`);
+        const fxData = await fxRes.json();
+        if (fxData.rates && fxData.rates[currencyCode]) {
+          exchangeRate = fxData.rates[currencyCode];
+        }
+      } catch(e) {
+        // silently fallback to USD only display
+        currencyCode = 'USD'; exchangeRate = 1;
+      }
+    }
+
+    // Currency symbols map
+    const symMap = {
+      'NGN':'₦','GHS':'GH₵','KES':'KSh','EGP':'E£','ZAR':'R','ETB':'Br','TZS':'TSh',
+      'MAD':'MAD ','GBP':'£','EUR':'€','CAD':'C$','AUD':'A$','NZD':'NZ$','JPY':'¥',
+      'CNY':'¥','INR':'₹','BRL':'R$','MXN':'MX$','SAR':'SR','AED':'AED ','QAR':'QR',
+      'KWD':'KD','TRY':'₺','KRW':'₩','IDR':'Rp','PKR':'Rs','BDT':'৳','PHP':'₱',
+      'THB':'฿','MYR':'RM','SGD':'S$','COP':'COP$','ARS':'AR$','CLP':'CL$',
+      'ILS':'₪','JOD':'JD','OMR':'OMR ','BHD':'BD','VND':'₫','CHF':'CHF ',
+      'SEK':'kr','NOK':'kr','DKK':'kr','PLN':'zł','HUF':'Ft','RON':'lei',
+      'RUB':'₽','KZT':'₸','UAH':'₴'
+    };
+    currencySymbol = symMap[currencyCode] || (currencyCode + ' ');
+
+    const feeLocal = Math.round(fee * exchangeRate);
+    const feeLocalFmt = feeLocal.toLocaleString();
+
+    // 4. Breakdown
+    const handling = Math.round(fee * 0.15);
+    const freight  = Math.round(fee * 0.55);
+    const customs  = Math.round(fee * 0.18);
     const insurance= fee - handling - freight - customs;
 
+    const handlingLocal = Math.round(handling * exchangeRate).toLocaleString();
+    const freightLocal  = Math.round(freight * exchangeRate).toLocaleString();
+    const customsLocal  = Math.round(customs * exchangeRate).toLocaleString();
+    const insLocal      = Math.round(insurance * exchangeRate).toLocaleString();
+
+    // 5. Populate modal
     document.getElementById('selectedAirportLabel').textContent = airport.split('—')[0].trim();
     document.getElementById('feeAmount').textContent = `$${fee}`;
-    document.getElementById('agreeAmt').textContent = `$${fee}`;
-    document.getElementById('brkHandling').textContent = `$${handling}`;
-    document.getElementById('brkFreight').textContent  = `$${freight}`;
-    document.getElementById('brkCustoms').textContent  = `$${customs}`;
-    document.getElementById('brkInsurance').textContent= `$${insurance}`;
+
+    // Show dual currency if not USD
+    const feeDisplay = document.getElementById('feeAmount');
+    if (currencyCode !== 'USD') {
+      feeDisplay.innerHTML = `$${fee} <span style="font-size:1rem;font-weight:500;color:var(--blue-light);display:block;margin-top:4px">${currencySymbol}${feeLocalFmt} ${currencyCode}</span>`;
+    } else {
+      feeDisplay.textContent = `$${fee}`;
+    }
+
+    document.getElementById('agreeAmt').textContent = currencyCode !== 'USD' ? `$${fee} (${currencySymbol}${feeLocalFmt} ${currencyCode})` : `$${fee}`;
+
+    if (currencyCode !== 'USD') {
+      document.getElementById('brkHandling').innerHTML = `$${handling} <span style="font-size:0.75rem;color:var(--muted)">(${currencySymbol}${handlingLocal})</span>`;
+      document.getElementById('brkFreight').innerHTML  = `$${freight} <span style="font-size:0.75rem;color:var(--muted)">(${currencySymbol}${freightLocal})</span>`;
+      document.getElementById('brkCustoms').innerHTML  = `$${customs} <span style="font-size:0.75rem;color:var(--muted)">(${currencySymbol}${customsLocal})</span>`;
+      document.getElementById('brkInsurance').innerHTML= `$${insurance} <span style="font-size:0.75rem;color:var(--muted)">(${currencySymbol}${insLocal})</span>`;
+    } else {
+      document.getElementById('brkHandling').textContent = `$${handling}`;
+      document.getElementById('brkFreight').textContent  = `$${freight}`;
+      document.getElementById('brkCustoms').textContent  = `$${customs}`;
+      document.getElementById('brkInsurance').textContent= `$${insurance}`;
+    }
+
+    // Add exchange rate note if applicable
+    let rateNote = document.getElementById('exchangeRateNote');
+    if (!rateNote) {
+      rateNote = document.createElement('div');
+      rateNote.id = 'exchangeRateNote';
+      rateNote.style.cssText = 'text-align:center;font-size:0.72rem;color:var(--muted2);margin-top:-0.5rem;margin-bottom:0.5rem;';
+      document.querySelector('.breakdown').insertAdjacentElement('afterend', rateNote);
+    }
+    if (currencyCode !== 'USD') {
+      rateNote.textContent = `Exchange rate: 1 USD ≈ ${exchangeRate.toLocaleString(undefined,{maximumFractionDigits:2})} ${currencyCode} · Live rate`;
+      rateNote.style.display = 'block';
+    } else {
+      rateNote.style.display = 'none';
+    }
 
     document.getElementById('agreeCheck').checked = false;
     document.getElementById('customCheck').classList.remove('checked');
