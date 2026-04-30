@@ -491,7 +491,7 @@
       </div>
       <div class="field">
         <label>Package Code <span style="color:var(--muted2)">(From Sender)</span></label>
-        <input type="text" id="packageNumber" placeholder="e.g. PKG-2847163905" autocomplete="off" style="text-transform:uppercase;letter-spacing:0.5px;" oninput="this.value=this.value.toUpperCase();checkForm()" />
+        <input type="text" id="packageNumber" placeholder="e.g. PKG-2847163905" autocomplete="off" style="text-transform:uppercase;letter-spacing:0.5px;" oninput="formatPkgInput(this);checkForm()" />
         <div class="input-hint">
           <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="#6b8ec7" stroke-width="1.5"/><path d="M8 5v4M8 11v.5" stroke="#6b8ec7" stroke-width="1.5" stroke-linecap="round"/></svg>
           Enter the package code given to you by your sender
@@ -1303,6 +1303,18 @@ async function resendOtp() {
   setTimeout(() => {
     sub.innerHTML = 'A 6-digit code has been sent to <strong id="otpEmailLabel" style="color:var(--blue-light)">' + email + '</strong>. Enter it below.';
   }, 3000);
+}
+
+// ── FORMAT PACKAGE CODE INPUT ─────────────────────────────────────────────────
+function formatPkgInput(el) {
+  let val = el.value.toUpperCase().replace(/[^A-Z0-9\-]/g, '');
+  // Auto-insert hyphen once user has typed "PKG"
+  if (val === 'PKG') val = 'PKG-';
+  // Enforce PKG- prefix and allow only digits after it
+  if (val.startsWith('PKG-')) {
+    val = 'PKG-' + val.slice(4).replace(/[^0-9]/g, '');
+  }
+  el.value = val;
 }
 </script>
 
