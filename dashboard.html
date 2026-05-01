@@ -365,20 +365,18 @@
       <div class="pulse-dot"></div>
     </div>
 
-    <p class="message-text">
-      Your booking has been received and is being processed by our logistics team.
-      Please check back in <strong style="color:var(--blue-light)">3 minutes</strong>
-      for your <strong style="color:var(--white)">receipt</strong> and
-      <strong style="color:var(--white)">tracking number</strong>.
+    <p class="message-text" id="mainMessage">
+      Please wait while we prepare your receipt and tracking number&hellip;
     </p>
 
-    <!-- Countdown -->
-    <div class="countdown-wrap">
-      <span class="countdown-icon">⏱</span>
-      <div>
-        <div class="countdown-label">Check back in</div>
-        <div class="countdown-time" id="countdownTimer">03:00</div>
+    <!-- Sending spinner -->
+    <div id="sendingSpinner" style="display:flex;flex-direction:column;align-items:center;gap:0.75rem;margin-bottom:1.5rem;">
+      <div style="position:relative;width:56px;height:56px;display:flex;align-items:center;justify-content:center;">
+        <div style="position:absolute;inset:0;border-radius:50%;border:2.5px solid rgba(96,165,250,0.15);border-top-color:var(--blue-bright);animation:spinRing 0.9s linear infinite;"></div>
+        <div style="position:absolute;inset:10px;border-radius:50%;border:2px solid rgba(96,165,250,0.08);border-bottom-color:#60a5fa;animation:spinRing 0.65s linear infinite reverse;"></div>
+        <span style="font-size:1.1rem;">&#128231;</span>
       </div>
+      <div style="font-family:'Outfit',sans-serif;font-size:0.72rem;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--blue-light);animation:pulseText 1.5s ease-in-out infinite;" id="spinnerLabel">Sending Receipt&hellip;</div>
     </div>
 
     <!-- Booking summary -->
@@ -410,7 +408,7 @@
       </div>
       <div class="step-row" id="stepReceipt">
         <div class="step-ico">📄</div>
-        <div class="step-txt"><strong>Receipt &amp; Tracking</strong>Will be sent to your email within 3 minutes.</div>
+        <div class="step-txt"><strong>Receipt &amp; Tracking</strong>Being sent to your email now.</div>
       </div>
     </div>
 
@@ -646,79 +644,58 @@
     }
   }
 
-  // ── COUNTDOWN TIMER ───────────────────────────────────────────────────────
-  const DURATION_MS = 3 * 60 * 1000; // 3 minutes
+  // ── SEND RECEIPT ─────────────────────────────────────────────────────────
 
-  // Always reset arrival time fresh when dashboard loads so the 3-min clock
-  // starts from the moment the user lands here, not from when OTP was sent.
-  const arrivalTime = Date.now();
-  localStorage.setItem('gss_arrival_time', arrivalTime.toString());
+  // ── IMMEDIATE SEND — no countdown, fire as soon as page loads ───────────
 
-  let receiptSent = false;
-  let timer; // declared here so clearInterval works inside updateCountdown
+  function showCompletedUI() {
+    // Hide spinner
+    const spinner = document.getElementById('sendingSpinner');
+    if (spinner) spinner.style.display = 'none';
 
-  function updateCountdown() {
-    const elapsed   = Date.now() - arrivalTime;
-    const remaining = Math.max(0, DURATION_MS - elapsed);
-    const mins = Math.floor(remaining / 60000);
-    const secs = Math.floor((remaining % 60000) / 1000);
-    document.getElementById('countdownTimer').textContent =
-      String(mins).padStart(2,'0') + ':' + String(secs).padStart(2,'0');
+    // Update main message
+    const msg = document.getElementById('mainMessage');
+    if (msg) msg.innerHTML = 'Your receipt has been dispatched. <strong style="color:var(--white)">Check your email.</strong>';
 
-    // FIX: use <= 0 not === 0 — setInterval can overshoot by a few ms
-    if (remaining <= 0) {
-      clearInterval(timer); // stop ticking first
-
-      document.getElementById('countdownTimer').textContent = '00:00';
-      document.getElementById('countdownTimer').style.color = 'var(--success)';
-
-      // ── COMPLETED UI UPDATES ────────────────────────────────────────
-      // 1. Change status badge to green "Completed"
-      const badge = document.getElementById('statusBadge');
-      if (badge) {
-        badge.style.background = 'rgba(34,197,94,0.12)';
-        badge.style.borderColor = 'rgba(34,197,94,0.35)';
-        badge.style.color = '#22c55e';
-      }
-      const dot = document.getElementById('statusDot');
-      if (dot) { dot.style.background = '#22c55e'; dot.style.animationName = 'none'; }
-      const txt = document.getElementById('statusText');
-      if (txt) txt.textContent = 'Completed';
-
-      // 2. Stop orbit rings + show green checkmark at airplane bottom
-      const orbit = document.getElementById('planeOrbit');
-      if (orbit) orbit.classList.add('completed');
-      const chk = document.getElementById('planeCheck');
-      if (chk) chk.classList.add('visible');
-      // 3. Swap the three pulse dots → green checkmark
-      const pulseDots = document.getElementById('pulseDots');
-      if (pulseDots) pulseDots.style.display = 'none';
-      const doneCheck = document.getElementById('doneCheck');
-      if (doneCheck) doneCheck.classList.add('visible');
-      // ────────────────────────────────────────────────────────────────
-
-      // Mark "Processing" step done too
-      const pStep = document.getElementById('stepProcessing');
-      if (pStep) { pStep.classList.add('done'); pStep.querySelector('.step-ico').textContent = '✓'; }
-
-      // Mark "Receipt" step done
-      const rStep = document.getElementById('stepReceipt');
-      if (rStep) { rStep.classList.add('done'); rStep.querySelector('.step-ico').textContent = '✓'; }
-
-      // Update booking summary status text
-      const bStatusEl = document.getElementById('bStatus');
-      if (bStatusEl) {
-        bStatusEl.textContent = 'Receipt sent — check your email ✓';
-        bStatusEl.style.color = 'var(--success)';
-      }
-
-      // Send receipt email exactly once
-      if (!receiptSent) {
-        receiptSent = true;
-        sendReceiptEmail();
-        showTrackingCard();
-      }
+    // 1. Status badge → green Completed
+    const badge = document.getElementById('statusBadge');
+    if (badge) {
+      badge.style.background  = 'rgba(34,197,94,0.12)';
+      badge.style.borderColor = 'rgba(34,197,94,0.35)';
+      badge.style.color       = '#22c55e';
     }
+    const dot = document.getElementById('statusDot');
+    if (dot) { dot.style.background = '#22c55e'; dot.style.animationName = 'none'; }
+    const txt = document.getElementById('statusText');
+    if (txt) txt.textContent = 'Completed';
+
+    // 2. Orbit rings stop + green checkmark on plane
+    const orbit = document.getElementById('planeOrbit');
+    if (orbit) orbit.classList.add('completed');
+    const chk = document.getElementById('planeCheck');
+    if (chk) chk.classList.add('visible');
+
+    // 3. Swap pulse dots → green checkmark
+    const pulseDots = document.getElementById('pulseDots');
+    if (pulseDots) pulseDots.style.display = 'none';
+    const doneCheck = document.getElementById('doneCheck');
+    if (doneCheck) doneCheck.classList.add('visible');
+
+    // 4. Mark Processing + Receipt steps done
+    const pStep = document.getElementById('stepProcessing');
+    if (pStep) { pStep.classList.add('done'); pStep.querySelector('.step-ico').textContent = '✓'; }
+    const rStep = document.getElementById('stepReceipt');
+    if (rStep) { rStep.classList.add('done'); rStep.querySelector('.step-ico').textContent = '✓'; }
+
+    // 5. Update booking status row
+    const bStatusEl = document.getElementById('bStatus');
+    if (bStatusEl) {
+      bStatusEl.textContent = 'Receipt sent — check your email ✓';
+      bStatusEl.style.color = 'var(--success)';
+    }
+
+    // 6. Append tracking card
+    showTrackingCard();
   }
 
   function showTrackingCard() {
@@ -753,40 +730,19 @@
     document.querySelector('.dash-card').appendChild(card);
   }
 
-  timer = setInterval(updateCountdown, 1000);
-  updateCountdown(); // call immediately so display starts at 03:00 not blank
+  // Fire immediately on page load
+  (async () => {
+    // Only send once per booking
+    const bookingIdKey = localStorage.getItem('gss_booking_id');
+    const alreadySent  = localStorage.getItem('gss_receipt_sent_' + bookingIdKey) === '1';
 
-  // ── POLL SUPABASE FOR STATUS UPDATE ──────────────────────────────────────
-  const bookingId = localStorage.getItem('gss_booking_id');
-  if (bookingId) {
-    const pollInterval = setInterval(async () => {
-      try {
-        const { data, error } = await _supabase
-          .from('bookings')
-          .select('status, track_code')
-          .eq('id', bookingId)
-          .single();
+    if (!alreadySent) {
+      await sendReceiptEmail();
+      if (bookingIdKey) localStorage.setItem('gss_receipt_sent_' + bookingIdKey, '1');
+    }
 
-        if (error || !data) return;
-
-        if (data.status === 'completed' || data.status === 'receipt_ready') {
-          const bStatusEl = document.getElementById('bStatus');
-          if (bStatusEl) {
-            bStatusEl.textContent = 'Receipt ready — check your email ✓';
-            bStatusEl.style.color = 'var(--success)';
-          }
-          const rStep = document.getElementById('stepReceipt');
-          if (rStep) { rStep.classList.add('done'); rStep.querySelector('.step-ico').textContent = '✓'; }
-          clearInterval(pollInterval);
-        }
-
-        if (data.track_code) {
-          const bTrackEl = document.getElementById('bTrack');
-          if (bTrackEl) bTrackEl.textContent = data.track_code;
-        }
-      } catch (e) { /* silent */ }
-    }, 30000); // poll every 30s
-  }
+    showCompletedUI();
+  })();
 </script>
 </body>
 </html>
